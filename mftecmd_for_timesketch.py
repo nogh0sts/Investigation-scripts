@@ -18,16 +18,20 @@ from pathlib import Path
 # capture or set system name for mft origin
 hostname = ""
 
+# Locate mftecmd csv out and read into polars data frame
+csv_path = ""
+
 # Optional Start Date for filesystem timeline - set or remove the start date which filters out all timestamps older than the start date 
 start_date_str = ""
 
+
+## Run function
 start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
 
 # output file name for parquet
 mftecmd_UTL_filename = (datetime.datetime.now().strftime("%Y-%m-%d")+'_'+hostname+'_mftecmd_UTL.parquet')
 
-# Locate mftecmd csv out and read into polars data frame
-csv_path = ""
+# Read in mft csv
 time_columns = ['Created0x10','LastAccess0x10','LastModified0x10','LastRecordChange0x10']
 read_in_mftecmd_cvs = (pl.read_csv(csv_path).with_columns([
                                                     pl.lit(os.path.split(csv_path)[1]).alias('csv_file'),
@@ -98,7 +102,8 @@ def mftecmd_UTL_pldf_out(mft_first_read_pldf : pl.DataFrame, start_time_ : datet
             .select([ 
                 pl.col(time_column).alias('datetime'),
                 pl.lit(timedesc).alias('timestamp_desc'),
-                pl.col('csv_file').str.extract('202\d+?_(.*)_MFTecmd_out\.csv').alias('system'), # set the host name for the MFT
+                # pl.col('csv_file').str.extract('202\d+?_(.*)_MFTecmd_out\.csv').alias('system'), # set the host name for the MFT
+                pl.lit(hostname).alias('system'),
                 pl.col('FileName').alias('resource_name'),
                 pl.lit('').alias('comment'),
                 pl.lit('').alias('tag'),
